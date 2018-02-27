@@ -6,7 +6,7 @@
 
 那么，如何理解一张图片？根据后续任务的需要，有三个主要的层次。
 
-![cv](img/cv.jpg)
+![cv](img/cv.jpg) _图像理解的三个层次_
 
 一是分类（Classification），即是将图像结构化为某一类别的信息，用事先确定好的类别(string)或实例ID来描述图片。这一任务是最简单、最基础的图像理解任务，也是深度学习模型最先取得突破和实现大规模应用的任务。其中，ImageNet是最权威的评测集，每年的ILSRVC催生了大量的优秀深度网络结构，为其他任务提供了基础。在应用领域，人脸、场景的识别都可以归为分类任务，其中，基于人脸识别的验证方案已经实现商用。
 
@@ -26,7 +26,7 @@
 
 传统的计算机视觉方法常用精心设计的手工特征(如SIFT, HOG)描述图像，而深度学习的方法则倡导习得特征，从图像分类任务的经验来看，CNN网络自动习得的特征取得的效果已经超出了手工设计的特征。本篇在局部区域应用卷积网络，以发挥卷积网络学习高质量特征的能力。
 
-![rcnn](img/rcnn.png)
+![rcnn](img/rcnn.png) _R-CNN网络结构_
 
 R-CNN将检测抽象为两个过程，一是基于图片提出若干可能包含物体的区域（即图片的局部裁剪），文中使用的是Selective Search算法；二是在提出的这些区域上运行当时表现最好的分类网络（AlexNet），得到每个区域内物体的类别。
 
@@ -44,11 +44,11 @@ Fast R-CNN 是对R-CNN的改进，作者栏只有RBG一人。文章先指出了R
 
 文章认为耗时的原因是CNN是在每一个Proposal上单独进行的，没有共享计算，便提出将基础网络在图片整体上运行完毕后，再传入R-CNN子网络，共享了大部分计算，故有fast之名。
 
-![fast-rcnn](img/fast-rcnn.png)
+![fast-rcnn](img/fast-rcnn.png) _Fast R-CNN网络结构_
 
 上图是Fast R-CNN的架构。图片经过feature extractor产生feature map, 原图上运行Selective Search算法将RoI（Region of Interset，实为坐标组）映射到到feature map上，再对每个RoI进行RoI Pooling操作便得到等长的feature vector，最后通过FC后并行地进行Classifaction和BBox Regression。
 
-![roi pooling, https://blog.deepsense.ai/region-of-interest-pooling-explained/](img/roi_pooling.gif)
+![roi pooling, https://blog.deepsense.ai/region-of-interest-pooling-explained/](img/roi_pooling.gif) _RoI Pooling图示（[来源](https://blog.deepsense.ai/region-of-interest-pooling-explained/)）_
 
 RoI Pooling 是对输入R-CNN子网络的数据进行准备的关键操作。我们得到的区域常常有不同的大小，在映射到feature map上之后，会得到不同大小的特征表述。RoI Pooling先将RoI等分成目标个数的网格，再在每个网格上进行max pooling，就得到等长的RoI feature vector。将这些得到的feature vector进行正负样本的整理（保持一定的正负样本比例），分batch传入并行的R-CNN子网络，同时进行分类和回归，并将两者的损失统一起来。
 
@@ -72,7 +72,7 @@ Faster R-CNN是2-stage方法的主流方法，提出的RPN网络取代Selective 
 
 本文的主要贡献是提出Regional Proposal Networks，替代之前的SS算法。RPN网络将Proposal这一任务建模为二分类（是否为物体）的问题。
 
-![faster rcnn](img/faster-rcnn.png)
+![faster rcnn](img/faster-rcnn.png) _Faster R-CNN网络结构_
 
 第一步是在一个滑动窗口上生成不同大小和长宽比例的anchor box（如上图右边部分），取定IoU的阈值，按Ground Truth标定这些anchor box的正负。于是，传入RPN网络的样本即是anchor box和每个anchor box是否有物体。RPN网络将每个样本映射为一个概率值和四个坐标值，概率值反应这个anchor box有物体的概率，四个坐标值用于回归定义物体的位置。最后将二分类和坐标回归的Loss统一起来，作为RPN网络的目标训练。之后，这些样本被传入R-CNN子网络，进行多分类和坐标回归，同样用多任务loss将二者的损失联合。
 
@@ -94,7 +94,7 @@ YOLO的主要优点：
 - 全局处理使得背景错误相对少，相比基于局部（区域）的方法， 如Fast RCNN。
 - 泛化性能好，在艺术作品上做检测时，YOLO表现好。
 
-![yolo](img/yolo.png)
+![yolo](img/yolo.png) _YOLO网络结构_
 
 YOLO的大致工作流程如下：
 
@@ -104,11 +104,11 @@ YOLO的大致工作流程如下：
 
 3.后处理：使用NMS过滤得到的box
 
-#### loss的设计
+#### 损失函数的设计
 
-![loss, https://zhuanlan.zhihu.com/p/24916786](img/yolo-loss.jpg)
+![loss, https://zhuanlan.zhihu.com/p/24916786](img/yolo-loss.jpg) _YOLO的损失函数分解，（[来源](https://zhuanlan.zhihu.com/p/24916786)）_
 
-损失函数被分为三部分：坐标误差、物体误差、类别误差。为了平衡类别不均衡和大小物体等带来的影响，loss中添加了权重并将长宽取根号。
+损失函数被分为三部分：坐标误差、物体误差、类别误差。为了平衡类别不均衡和大小物体等带来的影响，损失函数中添加了权重并将长宽取根号。
 
 #### 小结
 
@@ -118,7 +118,7 @@ YOLO提出了单阶段的新思路，相比两阶段方法，其速度优势明�
 
 [SSD: Single Shot Multibox Detector](https://arxiv.org/abs/1512.02325)
 
-![ssd](img/ssd.png)
+![ssd](img/ssd.png) _SSD网络结构_
 
 SSD相比YOLO有以下突出的特点：
 
@@ -129,7 +129,7 @@ SSD相比YOLO有以下突出的特点：
 
 SSD是单阶段模型的集大成者，达到跟两阶段模型相当精度的同时，拥有比两阶段模型快一个数量级的速度。后续的单阶段模型工作大多基于SSD改进展开。
 
-#### 检测模型基本特点
+## 检测模型基本特点
 
 最后，我们对检测模型的基本特征做一个简单的归纳。Faster R-CNN和SSD奠定了两阶段和单阶段检测模型的基本形态，深刻地影响着检测领域后续的大部分工作。
 
@@ -145,3 +145,7 @@ SSD是单阶段模型的集大成者，达到跟两阶段模型相当精度的�
 - RPN网络为RCNN网络提供良好的先验，并有机会整理样本的比例，减轻RCNN网络的学习负担
 
 这种设计的缺点也很明显：中间结果常常带来空间开销，而串行的方式也使得推断速度无法跟单阶段相比；级联的位置回归则会导致RCNN部分的重复计算（如两个RoI有重叠）。
+
+另一方面，单阶段模型只有一次类别预测和位置回归，卷积运算的共享程度更高，拥有更快的速度和更小的内存占用。
+
+在下一篇中，我们将介绍检测模型的评测指标与评测数据集，并总结常用的训练和建模技巧。
