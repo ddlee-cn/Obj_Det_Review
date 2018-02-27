@@ -1,7 +1,6 @@
+# （一）目标检测经典模型回顾
 
-### （一）目标检测经典模型回顾
-
-#### 目标检测的任务表述
+## 目标检测的任务表述
 
 如何从图像中解析出可供计算机理解的信息，是机器视觉的中心问题。深度学习模型由于其强大的表示能力，加之数据量的积累和计算力的进步，成为机器视觉的热点研究方向。
 
@@ -17,10 +16,9 @@
 
 本系列文章关注的领域是目标检测，即图像理解的中层次。
 
+## 两阶段（2-stage）检测模型
 
-#### 两阶段（2-stage）检测模型
-
-##### R-CNN: R-CNN系列的开山之作
+### R-CNN: R-CNN系列的开山之作
 
 [Rich feature hierarchies for accurate object detection and semantic segmentation](https://arxiv.org/abs/1311.2524)
 
@@ -34,12 +32,11 @@ R-CNN将检测抽象为两个过程，一是基于图片提出若干可能包含
 
 文章中特别提到，IoU的选择（即正负样例的标签准备）对结果影响显著，这里要谈两个threshold，一个用来识别正样本（IOU跟ground truth较高），另一个用来标记负样本（即背景类），而介于两者之间的则为hard negatives，若标为正类，则包含了过多的背景信息，反之又包含了要检测物体的特征，因而这些proposal便被忽略掉。另一个重要的问题是bounding-box regression，这一过程是proposal向ground truth调整，实现时加入了log/exp变换来使loss保持在合理的量级上。这些做法被后来的大部分工作沿用。
 
-###### 小结
+#### 小结
 
 R-CNN的想法直接明了，即是将CNN在分类上取得的成就运用在检测上，是深度学习方法在检测任务上的试水。模型本身存在的问题也很多，如需要训练三个不同的模型（proposal, classification, regression）、重复计算过多导致的性能问题等。尽管如此，这篇论文的很多做法仍然广泛地影响着检测任务上的深度模型革命，后续的很多工作也都是针对改进文章中的pipeline而展开，此篇可以称得上"the first paper"。
 
-
-##### Fast R-CNN: 共享卷积运算
+### Fast R-CNN: 共享卷积运算
 
 [Fast R-CNN](https://arxiv.org/abs/1504.08083)
 
@@ -63,10 +60,11 @@ RoI Pooling 是对输入R-CNN子网络的数据进行准备的关键操作。我
 - Softmax分类器比"one vs rest"型的SVM表现略好，引入了类间的竞争
 - 更多的Proposal并不一定带来性能的提升
 
-###### 小结
+#### 小结
+
 Fast R-CNN的这一结构正是检测任务主流2-stage方法所采用的元结构的雏形。文章将Proposal, Feature Extractor, Object Recognition&Localization统一在一个整体的结构中，并推进共享卷积计算以提高效率的想法演进，是最有贡献的地方。
 
-##### Faster R-CNN: 两阶段模型的深度化
+### Faster R-CNN: 两阶段模型的深度化
 
 [Faster R-CNN: Towards Real Time Object Detection with Region Proposal Networks](https://arxiv.org/abs/1506.01497)
 
@@ -78,13 +76,13 @@ Faster R-CNN是2-stage方法的主流方法，提出的RPN网络取代Selective 
 
 第一步是在一个滑动窗口上生成不同大小和长宽比例的anchor box（如上图右边部分），取定IoU的阈值，按Ground Truth标定这些anchor box的正负。于是，传入RPN网络的样本即是anchor box和每个anchor box是否有物体。RPN网络将每个样本映射为一个概率值和四个坐标值，概率值反应这个anchor box有物体的概率，四个坐标值用于回归定义物体的位置。最后将二分类和坐标回归的Loss统一起来，作为RPN网络的目标训练。之后，这些样本被传入R-CNN子网络，进行多分类和坐标回归，同样用多任务loss将二者的损失联合。
 
-###### 小结
-Faster R-CNN的成功之处在于用RPN网络完成了检测任务的“深度化”。使用滑动窗口生成anchor box的思想也在后来的工作中越来越多地被采用（YOLO v2等）。RPN网络也成为检测2-stage方法的标准部件。
+#### 小结
 
+Faster R-CNN的成功之处在于用RPN网络完成了检测任务的"深度化"。使用滑动窗口生成anchor box的思想也在后来的工作中越来越多地被采用（YOLO v2等）。RPN网络也成为检测2-stage方法的标准部件。
 
-#### 单阶段（1-stage）检测模型
+## 单阶段（1-stage）检测模型
 
-##### YOLO
+### YOLO
 
 [You Only Look Once: Unified, Real-Time Object Detection](https://arxiv.org/abs/1506.02640)
 
@@ -102,23 +100,21 @@ YOLO的大致工作流程如下：
 
 1.准备数据：将图片缩放，划分为等分的网格，每个网格按跟ground truth的IOU分配到所要预测的样本。
 
-2.卷积网络：由GoogLeNet更改而来，每个网格对每个类别预测一个条件概率值，并在网格基础上生成B个box，每个box预测五个回归值，四个表征位置，第五个表征这个box含有物体（注意不是某一类物体）的概率和位置的准确程度（由IOU表示）。测试时，分数如下计算：
-等式左边第一项由网格预测，后两项由每个box预测，综合起来变得到每个box含有不同类别物体的分数。
-因而，卷积网络共输出的预测值个数为S×S×(B×5+C)，S为网格数，B为每个网格生成box个数，C为类别数。
+2.卷积网络：由GoogLeNet更改而来，每个网格对每个类别预测一个条件概率值，并在网格基础上生成B个box，每个box预测五个回归值，四个表征位置，第五个表征这个box含有物体（注意不是某一类物体）的概率和位置的准确程度（由IOU表示）。测试时，分数如下计算： 等式左边第一项由网格预测，后两项由每个box预测，综合起来变得到每个box含有不同类别物体的分数。 因而，卷积网络共输出的预测值个数为S×S×(B×5+C)，S为网格数，B为每个网格生成box个数，C为类别数。
 
 3.后处理：使用NMS过滤得到的box
 
-###### loss的设计
+#### loss的设计
 
 ![loss, https://zhuanlan.zhihu.com/p/24916786](img/yolo-loss.jpg)
 
 损失函数被分为三部分：坐标误差、物体误差、类别误差。为了平衡类别不均衡和大小物体等带来的影响，loss中添加了权重并将长宽取根号。
 
-###### 小结
+#### 小结
 
 YOLO提出了单阶段的新思路，相比两阶段方法，其速度优势明显，实时的特性令人印象深刻。但YOLO本身也存在一些问题，如划分网格较为粗糙，每个网格生成的box个数等限制了对小尺度物体和相近物体的检测。
 
-##### SSD: Single Shot Multibox Detector
+### SSD: Single Shot Multibox Detector
 
 [SSD: Single Shot Multibox Detector](https://arxiv.org/abs/1512.02325)
 
@@ -129,10 +125,23 @@ SSD相比YOLO有以下突出的特点：
 - 多尺度的feature map：基于VGG的不同卷积段，输出feature map到回归器中。这一点试图提升小物体的检测精度。
 - 更多的anchor box，每个网格点生成不同大小和长宽比例的box，并将类别预测概率基于box预测（YOLO是在网格上），得到的输出值个数为(C+4)×k×m×n，其中C为类别数，k为box个数，m×n为feature map的大小。
 
-###### 小结
+#### 小结
 
 SSD是单阶段模型的集大成者，达到跟两阶段模型相当精度的同时，拥有比两阶段模型快一个数量级的速度。后续的单阶段模型工作大多基于SSD改进展开。
 
-#### 检测模型基本特征
+#### 检测模型基本特点
 
-最后，我们对检测模型的基本特征做一个简单的归纳。
+最后，我们对检测模型的基本特征做一个简单的归纳。Faster R-CNN和SSD奠定了两阶段和单阶段检测模型的基本形态，深刻地影响着检测领域后续的大部分工作。
+
+![faster-rcnn-arch](img/faster-rcnn-arch.png) _两阶段检测模型Pipeline_
+
+检测模型整体上由基础网络（Backbone Network）和检测头部（Detection Head）构成。前者作为特征提取器，给出图像不同大小、不同抽象层次的表示；后者则依据这些表示和监督信息学习类别和位置关联。检测头部负责的类别预测和位置回归两个任务常常是并行进行的，构成多任务的损失进行联合训练。
+
+![faster-rcnn-head](img/faster-rcnn-head.png) _检测模型头部并行的分支_
+
+相比单阶段，两阶段检测模型通常含有一个串行的头部结构，即完成前背景分类和回归后，把中间结果作为RCNN头部的输入再进行一次多分类和位置回归。这种设计带来了一些优点：
+
+- 对检测任务的解构，先进行前背景的分类，再进行物体的分类
+- RPN网络为RCNN网络提供良好的先验，并有机会整理样本的比例，减轻RCNN网络的学习负担
+
+这种设计的缺点也很明显：中间结果常常带来空间开销，而串行的方式也使得推断速度无法跟单阶段相比；级联的位置回归则会导致RCNN部分的重复计算（如两个RoI有重叠）。
