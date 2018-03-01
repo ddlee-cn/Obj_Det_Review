@@ -4,7 +4,7 @@
 
 ## 大纲
 
-![overview](img/overview.png)
+![overview](static/img/overview.png)
 
 # 目录
 
