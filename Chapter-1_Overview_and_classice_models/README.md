@@ -6,7 +6,7 @@
 
 ## 两阶段（2-stage）检测模型
 
-两阶段模型因其对图片的两阶段处理得名，也成为基于区域（Region-based）的方法，我们选取R-CNN系列工作作为这一类型的代表。
+两阶段模型因其对图片的两阶段处理得名，也称为为基于区域（Region-based）的方法，我们选取R-CNN系列工作作为这一类型的代表。
 
 ### R-CNN: R-CNN系列的开山之作
 
@@ -42,11 +42,11 @@ R-CNN的想法直接明了，即将检测任务转化为区域上的分类任务
 
 ![fast-rcnn](img/fast-rcnn.png) _Fast R-CNN网络结构_
 
-上图是Fast R-CNN的架构。图片经过feature extractor得到feature map, 同时在原图上运行Selective Search算法并将RoI（Region of Interset，实为坐标组，可与Region Proposal混用）映射到到feature map上，再对每个RoI进行RoI Pooling操作便得到等长的feature vector，最后通过全连接层进行编码，再并行地进行分类和位置坐标回归。
+上图是Fast R-CNN的架构。图片经过feature extractor得到feature map, 同时在原图上运行Selective Search算法并将RoI（Region of Interset，实为坐标组，可与Region Proposal混用）映射到到feature map上，再对每个RoI进行RoI Pooling操作便得到等长的feature vector，将这些得到的feature vector进行正负样本的整理（保持一定的正负样本比例），分batch传入并行的R-CNN子网络，同时进行分类和回归，并将两者的损失统一起来。
 
 ![roi pooling, https://blog.deepsense.ai/region-of-interest-pooling-explained/](img/roi_pooling.gif) _RoI Pooling图示（[来源](https://blog.deepsense.ai/region-of-interest-pooling-explained/)）_
 
-RoI Pooling 是对输入R-CNN子网络的数据进行准备的关键操作。我们得到的区域常常有不同的大小，在映射到feature map上之后，会得到不同大小的特征张量。RoI Pooling先将RoI等分成目标个数的网格，再在每个网格上进行max pooling，就得到等长的RoI feature vector。将这些得到的feature vector进行正负样本的整理（保持一定的正负样本比例），分batch传入并行的R-CNN子网络，同时进行分类和回归，并将两者的损失统一起来。
+RoI Pooling 是对输入R-CNN子网络的数据进行准备的关键操作。我们得到的区域常常有不同的大小，在映射到feature map上之后，会得到不同大小的特征张量。RoI Pooling先将RoI等分成目标个数的网格，再在每个网格上进行max pooling，就得到等长的RoI feature vector。
 
 文章最后的讨论也有一定的借鉴意义：
 
