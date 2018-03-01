@@ -1,7 +1,10 @@
-
 # （三）目标检测新趋势之基础网络结构演进、分类与定位的权衡
 
 从此篇开始，我们对近几年检测领域的工作做一些介绍，并试图从中归纳出一些趋势。本篇关注基础网络架构的演进和处理分类、定位这一矛盾问题上的进展。
+
+## 文章结构
+
+![overview](img/overview.png)
 
 ## 基础网络结构的演进
 
@@ -71,7 +74,6 @@ Xception最终的网络结构如下，简单讲是线性堆叠的Depthwise Separ
 
 本文提出了深度网络的新维度，除了深度、宽度（Channel数）外，作者将在某一层并行transform的路径数提取为第三维度，称为"cardinality"。跟Inception单元不同的是，这些并行路径均共享同一拓扑结构，而非精心设计的卷积核并联。除了并行相同的路径外，也添加了层与层间的shortcut connection。
 
-
 相比Inception-ResNet，ResNeXt相当于将其Inception Module的每条路径规范化了，并将规范后的路径数目作为新的超参数。
 
 ![resnext](img/resnext_module.png)
@@ -79,7 +81,6 @@ Xception最终的网络结构如下，简单讲是线性堆叠的Depthwise Separ
 上图中，路径被扩展为多条，而每条路径的宽度（channel数）也变窄了（64->4）。
 
 在近期Facebook开源的Detectron框架中，ResNeXt作为Mask R-CNN的基础网络也取得了非常高的精度。
-
 
 ### SENet
 
@@ -89,12 +90,11 @@ SENet是最后一届ImageNet Challenge的夺冠架构，中心思想是添加旁
 
 ![senet](img/senet.png)
 
-SENet通过‘特征重标定’（Feature Recalibration）来完成channel层面的注意力机制。具体地，先通过Squeeze操作将特征的空间性压缩掉，仅保留channel维度，再通过Excitation操作为每个特征通道生成一个权重，用于显式地建模channel之间的相关性，最后通过Reweight操作将权重加权到原来的channel上，即构成不同channel间重标定。
+SENet通过'特征重标定'（Feature Recalibration）来完成channel层面的注意力机制。具体地，先通过Squeeze操作将特征的空间性压缩掉，仅保留channel维度，再通过Excitation操作为每个特征通道生成一个权重，用于显式地建模channel之间的相关性，最后通过Reweight操作将权重加权到原来的channel上，即构成不同channel间重标定。
 
 SENet可以作为网络中模块间的额外连接附属到原有的经典结构上，其Squeeze操作在压缩信息的同时也降低了这一附属连接的开销。
 
 ![senet-example](img/senet-example.jpg)
-
 
 ## 分类与定位问题的权衡
 
@@ -106,11 +106,11 @@ SENet可以作为网络中模块间的额外连接附属到原有的经典结构
 
 [R-FCN: Object Detection via Region-based Fully Convolutinal Networks](https://arxiv.org/abs/1605.06409)
 
-文章指出了检测任务之前的框架存在不自然的设计，即全卷积的特征提取部分+全连接的分类器，而表现最好的图像分类器都是全卷积的结构（ResNet等）。这篇文章提出采用“位置敏感分数图”的方法来使检测网络保持全卷积结构的同时又拥有位置感知能力。
+文章指出了检测任务之前的框架存在不自然的设计，即全卷积的特征提取部分+全连接的分类器，而表现最好的图像分类器都是全卷积的结构（ResNet等）。这篇文章提出采用"位置敏感分数图"的方法来使检测网络保持全卷积结构的同时又拥有位置感知能力。
 
 ![rfcn](img/rfcn.jpg)
 
-位置敏感分数图的生成有两个重要操作，一是生成更“厚”的feature map，二是在RoI Pooling时选择性地输入feature map。
+位置敏感分数图的生成有两个重要操作，一是生成更"厚"的feature map，二是在RoI Pooling时选择性地输入feature map。
 
 Faster R-CNN中，经过RPN得到RoI，转化成分类任务，还加入了一定量的卷积操作（ResNet中的conv5部分），而这一部分卷积操作是不能共享的。R-FCN则着眼于全卷积结构，利用卷积操作在Channel这一维度上的自由性，赋予其位置敏感的意义。下面是具体的操作：
 
@@ -120,11 +120,12 @@ Faster R-CNN中，经过RPN得到RoI，转化成分类任务，还加入了一�
 
 - 经过上一步，每个RoI得到的结果是k^2(C+1)大小的分数张量，k×k编码着物体的局部分数信息，进行vote（平均）后得到(C+1)维的分数向量，再接入softmax得到每一类的概率。
 
-上面第二步操作中“仅选取第(i, j)号feature map”是位置信息产生意义的关键。
+上面第二步操作中"仅选取第(i, j)号feature map"是位置信息产生意义的关键。
 
 这样设计的网络结构，所有可学习的参数都分布在可共享的卷积层，因而在训练和测试性能上均有提升。
 
 #### 小结
+
 R-FCN是对Faster R-CNN结构上的改进，部分地解决了位置不变性和位置敏感性的矛盾。通过最大化地共享卷积参数，使得在精度相当的情况下训练和测试效率都有了很大的提升。
 
 ### Deformable Convolution Networks
