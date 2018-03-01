@@ -88,8 +88,15 @@ SSDLite是在介绍MobileNets V2的论文[Inverted Residuals and Linear Bottlene
 
 单阶段检测模型的先驱工作YOLO也迎来了全面的更新：
 
-1.在卷积层添加BN，舍弃Dropout 2.更高尺寸的输入 3.使用Anchor Boxes，并在头部运用卷积替代全连接层 4.使用聚类方法得到更好的先验，用于生成Anchor Boxes 5.参考Fast R-CNN的方法对位置坐标进行log/exp变换使坐标回归的损失保持在合适的数量级 6.passthrough层：类似ResNet的skip-connection，将不同尺寸的feature map拼接到一起 7.多尺度训练 8.更高效的网络Darknet-19，类似VGG的网络，在ImageNet上以较少的参数量达到跟当前最佳相当的精度
+1. 在卷积层添加BN，舍弃Dropout
+2. 更高尺寸的输入
+3. 使用Anchor Boxes，并在头部运用卷积替代全连接层
+4. 使用聚类方法得到更好的先验，用于生成Anchor Boxes
+5. 参考Fast R-CNN的方法对位置坐标进行log/exp变换使坐标回归的损失保持在合适的数量级
+6. passthrough层：类似ResNet的skip-connection，将不同尺寸的feature map拼接到一起
+7. 多尺度训练
+8. 更高效的网络Darknet-19，类似VGG的网络，在ImageNet上以较少的参数量达到跟当前最佳相当的精度
 
-![yolov2](img/yolov2.png)
+![yolov2](img/yolov2.jpg)
 
 此次改进后，YOLOv2吸收了很多工作的优点，达到跟SSD相当的精度和更快的推断速度。
