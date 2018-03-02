@@ -1,8 +1,8 @@
 # （三）目标检测新趋势之基础网络结构演进、分类与定位的权衡
 
-从此篇开始，我们对近几年检测领域的工作做一些介绍，并试图从中归纳出一些趋势。
+从此篇开始，我们对近几年检测领域的工作提供一个概览，并试图从中归纳出一些趋势。由于篇幅和视野所限，文章不会求全，相对注重思路的演进，淡化实验结果的报告。事实上，我们并没有看到这一任务上的"The Best Paper"和"The Final Paper"，现阶段的工作远远没有到解决这一问题的程度，深度学习模型也仍然是非常年轻的研究领域。
 
-笔者维护了一个检测模型进展追踪项目：[obj_det_progress_tracker](https://github.com/ddlee96/Obj_Det_progress_tracker)，收集了研究论文汇报的在上述评测集上的精度进展，可供参考。
+实验结果方面，笔者维护了一个检测模型进展追踪项目：[obj_det_progress_tracker](https://github.com/ddlee96/Obj_Det_progress_tracker)，收集了论文汇报的在VOC和COCO上的精度进展，可供参考。
 
 ## 文章结构
 
@@ -12,13 +12,13 @@
 
 ## 基础网络结构的演进
 
-基础网络（Backbone network）作为特征提取器，对检测模型的性能有着至关重要的影响。每年的ILSRVC都会推动大批优秀网络结构的出现，在分类任务上表现出色的结构被引入到检测领域，常常也能取得正向的表现。
+基础网络（Backbone network）作为特征提取器，对检测模型的性能有着至关重要的影响。在分类任务的权威评测集ImageNet上，基于卷积网络的方法已经取得超越人类水平的进步，并也促使ImageNet完成了她的历史使命。这也是机器视觉领域的整体进步，优秀的特征、深刻的解释都为其他任务的应用提供了良好的基础。在本节中，我们选取了几个在检测任务上成功应用的基础网络做一些介绍。
 
 ### 卷积网络结构演进的趋势
 
 笔者认为，卷积网络已经有如下几个经典的设计范式：
 
-- Repeat. 由AlexNet和VGG等开拓，几乎被之后所有的网络采用。即堆叠相同的拓扑结构，整个网络成为模块化的结构。
+- Repeat. 由AlexNet和VGG等开拓，被之后几乎所有的网络采用。即堆叠相同的拓扑结构，整个网络成为模块化的结构。
 - Multi-path. 由Inception系列发扬，将前一层的输入分割到不同的路径上进行变换，最后拼接结果。
 - Skip-connection. 最初出现于Highway Network，由ResNet发扬并成为标配。即建立浅层信息与深层信息的传递通道，改变原有的单一线性结构。
 
@@ -26,11 +26,9 @@
 
 ![cnn](img/cnn.png)
 
-需要说明的是，上图并不能概括完全近年来卷积网络的进步，各分支之间也有很多相互借鉴和共通的特征，而致力于精简网络结构的工作如SqueezeNet等则没有出现。
+需要说明的是，上图并不能概括完全近年来卷积网络的进步，各分支之间也有很多相互借鉴和共通的特征，而致力于精简网络结构的工作如SqueezeNet等则没有出现，卷积网络结构方面另一个重要的潮流是深度可分离卷积（Depth-wise seperable convolution）的应用。
 
-另外一个重要的潮流是深度可分离卷积（Depth-wise seperable convolution）的应用。在下面几个小节，我们对几个经典的结构做一些介绍。
-
-### ResNet
+### ResNet: 残差学习
 
 [Deep Residual Learning for Image Recognition](http://arxiv.org/abs/1512.03385)
 
@@ -42,7 +40,7 @@
 
 在检测领域，原来的VGG也逐渐被ResNet系列网络替代，文章中以ResNet作为基础网络的Faster R-CNN也常作为后续工作的基线进行比较。
 
-### Xception
+### Xception：可分离卷积的大面积应用
 
 [Xception: Deep Learning with Depthwise Separable Convolutions](https://arxiv.org/abs/1610.02357)
 
@@ -72,7 +70,7 @@ Xception最终的网络结构如下，简单讲是线性堆叠的Depthwise Separ
 
 在MS COCO Chanllege 2017中，MSRA团队以对齐版本的Xception为基础网络取得前列的成绩，一定程度上说明了这一网络提取特征的能力。
 
-### ResNeXt
+### ResNeXt：新的维度
 
 [Aggregated Residual Transformations for Deep Neural Networks](https://arxiv.org/abs/1611.05431)
 
@@ -86,7 +84,7 @@ Xception最终的网络结构如下，简单讲是线性堆叠的Depthwise Separ
 
 在近期Facebook开源的Detectron框架中，ResNeXt作为Mask R-CNN的基础网络也取得了非常高的精度。
 
-### SENet
+### SENet：卷积网络的Attention组件
 
 [Squeeze and Excitation Network](https://arxiv.org/abs/1709.01507)
 
