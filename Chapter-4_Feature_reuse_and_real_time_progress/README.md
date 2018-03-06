@@ -1,8 +1,10 @@
 # （四）目标检测领域的新趋势之特征复用、实时性
 
-本篇关注检测模型的头部部分。在图片经过基础网络映射后，获得的特征如何有效地利用在检测中，是一个中心问题。另外，本篇也介绍一部分面向实时检测的工作。
-
 ## 文章结构
+
+本文的第一部分关注检测模型的头部部分。对与每张图片，深度网络其实是通过级联的映射获得了在某一流形上的一个表征，这个表征相比原图片更有计算机视角下的语义性。例如，使用Softmax作为损失函数的分类网络，最后一层获得的张量常常展现出成簇的分布。深度网络因分布式表示带来的指数级增益，拥有远超其他机器学习模型的表示能力，近年来，有不少致力于对深度网络习得特征进行可视化的工作，为研究者提供了部分有直观意义的感知，如浅层学习线条纹理，深层学习物体轮廓。然而，现阶段的深度模型仍然是一个灰盒，缺乏有效的概念去描述网络容量、特征的好坏、表达能力等等被研究者常常提到但又给不出精确定义的指代。本篇的第一节将介绍通过头部网络结构的设计来更有效利用基础网络所提供特征的工作，帮助读者进一步理解检测任务的难点和研究者的解决思路。
+
+第二部分则关注面向实时性检测的工作，这也是检测任务在应用上的目标。如本系列文章第二篇所述，实时性这一要求并没有通用的评价标准，应用领域也涉及到更多网络的压缩、加速和工程上的优化乃至硬件层面的工作等，则不在本文的介绍范围。
 
 ![overview](img/overview.png)
 
@@ -75,9 +77,11 @@ TDM的设计相比FPN拥有更多可学习的参数和灵活性，文章的实�
 
 ![RefineDet](img/refinedet.jpg)
 
-本文是一阶段的模型，但思路上却是两阶段的。文章指出两阶段方法精度有优势的原因有三点：1）两阶段的设计使之有空间来用采样策略处理类别不均衡的问题；2）级联的方式进行box回归；3）两阶段的特征描述。文章提出两个模块来在一阶段检测器中引入两阶段设计的优势：Anchor Refinement Module(ARM)和Object Detection Module(ODM)。前者用于识别并过滤背景类anchor来降低分类器的负担，并且调整anchor位置以更好的向分类器输入，后者用于多分类和box的进一步回归。
+本文是一阶段的模型，但思路上却是两阶段的。文章指出两阶段方法精度有优势的原因有三点：1）两阶段的设计使之有空间来用采样策略处理类别不均衡的问题；2）级联的方式进行box回归；3）两阶段的特征描述。
 
-Single-shot的体现在上面两个模块通过Transfer Connection Block共用特征。除此之外，Transfer Connection Block还将特征图反传，构成类似FPN的效果。两个模块建立联合的loss使网络能够端到端训练。
+文章提出两个模块来在一阶段检测器中引入两阶段设计的优势：Anchor Refinement Module(ARM)和Object Detection Module(ODM)。前者用于识别并过滤背景类anchor来降低分类器的负担，并且调整anchor位置以更好的向分类器输入，后者用于多分类和box的进一步回归。
+
+Single-shot的体现在上面两个模块通过Transfer Connection Block共用特征。除此之外，Transfer Connection Block还将特征图反传，构成类似FPN的效果。两个模块建立联合的损失使网络能够端到端训练。
 
 实验结果显示RefineNet的效果还是不错的，速度跟YOLOv2相当，精度上更有优势。之后的Ablation experiments也分别支撑了负样本过滤、级联box回归和Transfer Connection Block的作用。可以说这篇文章的工作让两阶段和一阶段检测器的界限更加模糊了。
 
@@ -91,9 +95,9 @@ Single-shot的体现在上面两个模块通过Transfer Connection Block共用�
 
 针对这两种元结构(Faster-RCNN和RFCN)，文章提出了"头"轻量化方法，试图在保持精度的同时又能减少冗余的计算量，从而实现精度和速度的Trade-off。
 
-![light-head](img/light-head.png)
+![light-head](img/light-head.png) _Light-head R-CNN与Faster R-CNN, R-FCN的对比_
 
-如上图，虚线框出的部分是三种结构的RCNN子网络（在每个RoI上进行的计算），light-head R-CNN中，在生成Score map前，ResNet的stage5中卷积被替换为sperable convolution，产生的Score map也减少至10×p×p（相比原先的#class×p×p）。
+如上图，虚线框出的部分是三种结构的R-CNN子网络（在每个RoI上进行的计算），light-head R-CNN中，在生成Score map前，ResNet的stage5中卷积被替换为深度可分离卷积，产生的Score map也减少至10×p×p（相比原先的类别数×p×p，p为网格划分粒度，R-FCN中取7）。
 
 一个可能的解释是，"瘦"（channel数较少）的score map使用于分类的特征信息更加紧凑，原先较"厚"的score map在经过PSROIPooling的操作时，大部分信息并没有提取（只提取了特定类和特定位置的信息，与这一信息处在同一score map上的其他数据都被忽略了）。
 
@@ -103,10 +107,6 @@ light-head在这里的改进则是把这一个隐藏的嵌入空间压缩到较�
 
 粗看来，light-head将原来RFCN的score map的职责两步化了：thin score map主攻位置信息，RCNN子网络中的FC主攻分类信息。另外，global average pool的操作被去掉，用于保持精度。
 
-### SSDLite(MobileNets V2)
-
-SSDLite是在介绍MobileNets V2的论文[Inverted Residuals and Linear Bottlenecks: Mobile Networks for Classification, Detection and Segmentation](https://arxiv.org/abs/1801.04381)中提出的，改进之处在于将SSD的检测头部中的卷积运算替换为深度可分离卷积，降低了头部计算的参数量。另外，这篇文章首次给出了检测模型在移动设备CPU上单核运行的速度，有一定的参考价值。
-
 ### YOLOv2
 
 [YOLO9000: Better, Faster, Stronger](https://arxiv.org/1612.08242)
@@ -114,7 +114,7 @@ SSDLite是在介绍MobileNets V2的论文[Inverted Residuals and Linear Bottlene
 单阶段检测模型的先驱工作YOLO也迎来了全面的更新：
 
 1. 在卷积层添加BN，舍弃Dropout
-2. 更高尺寸的输入
+2. 更大尺寸的输入
 3. 使用Anchor Boxes，并在头部运用卷积替代全连接层
 4. 使用聚类方法得到更好的先验，用于生成Anchor Boxes
 5. 参考Fast R-CNN的方法对位置坐标进行log/exp变换使坐标回归的损失保持在合适的数量级
