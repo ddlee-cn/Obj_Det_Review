@@ -24,21 +24,21 @@
 
 以这些范式为脉络整理卷积网络的演进历程，可以归纳出下面的图景：
 
-![cnn](img/cnn.png)
+![cnn](img/cnn.png) _CNN的经典设计范式_
 
-需要说明的是，上图并不能概括完全近年来卷积网络的进步，各分支之间也有很多相互借鉴和共通的特征，而致力于精简网络结构的工作如SqueezeNet等则没有出现，卷积网络结构方面另一个重要的潮流是深度可分离卷积（Depth-wise seperable convolution）的应用。
+需要说明的是，上图并不能概括完全近年来卷积网络的进步，各分支之间也有很多相互借鉴和共通的特征，而致力于精简网络结构的工作如SqueezeNet等则没有出现，卷积网络结构方面另一个重要的潮流是深度可分离卷积（Depth-wise seperable convolution）的应用。下面我们选择几个在检测任务上成功应用的基础网络结构进行介绍。
 
 ### ResNet: 残差学习
 
 [Deep Residual Learning for Image Recognition](http://arxiv.org/abs/1512.03385)
 
-![residual](img/residual_block.png)
+![residual](img/residual_block.png) _残差单元将原函数分解为残差_
 
 作者将网络的训练解释为对某一复杂函数的拟合，通过添加跳跃连接，变对这一函数的拟合为每层对某一残差的拟合（有点Boosting的意思），引入的恒等项也让BP得到的梯度更为稳定。
 
 残差网络以skip-connection的设计较为成功地缓解了深层网络难以收敛的问题，将网络的深度提高了一个数量级，也带动了一系列对残差网络的解释研究和衍生网络的提出。
 
-在检测领域，原来的VGG也逐渐被ResNet系列网络替代，文章中以ResNet作为基础网络的Faster R-CNN也常作为后续工作的基线进行比较。
+在检测领域，VGG作为特征提取器的地位也逐渐被ResNet系列网络替代，文章中以ResNet作为基础网络的Faster R-CNN也常作为后续工作的基线进行比较。
 
 ### Xception：可分离卷积的大面积应用
 
@@ -52,23 +52,23 @@ Xception网络可以看做对Inception系列网络的推进，也是深度可分
 
 一个简化的Inception单元：
 
-![xcetpion-1](img/xception-1.png)
+![xcetpion-1](img/xception-1.png) _简化的Inception单元，去掉了Pooling分支_
 
 等价于：
 
-![xcetpion-2](img/xception-2.png)
+![xcetpion-2](img/xception-2.png) _等价的简化Inception单元，将1x1卷积合并_
 
 将channel的group推向极端，即每个channel都由独立的3×3卷积处理：
 
-![xcetpion-3](img/xception-3.png)
+![xcetpion-3](img/xception-3.png) _把分组的粒度降为1_
 
 这样就得到了深度可分离卷积。
 
 Xception最终的网络结构如下，简单讲是线性堆叠的Depthwise Separable卷积，并附加了Skip-connection。
 
-![xception](img/xception.png)
+![xception](img/xception.png) _Xceptiong的网络结构_
 
-在MS COCO Chanllege 2017中，MSRA团队以对齐版本的Xception为基础网络取得前列的成绩，一定程度上说明了这一网络提取特征的能力。
+在MS COCO Chanllege 2017中，MSRA团队以对齐版本的Xception为基础网络取得前列的成绩，一定程度上说明了这一网络提取特征的能力；另一方面，Xception的一个改编版本也被Light-head R-CNN的工作（将在下一篇的实时性部分介绍）应用，以两阶段的方式取得了精度和速度都超越SSD等单阶段检测器的表现。
 
 ### ResNeXt：新的维度
 
@@ -78,7 +78,7 @@ Xception最终的网络结构如下，简单讲是线性堆叠的Depthwise Separ
 
 相比Inception-ResNet，ResNeXt相当于将其Inception Module的每条路径规范化了，并将规范后的路径数目作为新的超参数。
 
-![resnext](img/resnext_module.png)
+![resnext](img/resnext_module.png) _ResNeXt的基本单元_
 
 上图中，路径被扩展为多条，而每条路径的宽度（channel数）也变窄了（64->4）。
 
@@ -130,9 +130,9 @@ NASNet采取了自动搜索的方式去设计网络的结构，人工的部分�
 
 [R-FCN: Object Detection via Region-based Fully Convolutinal Networks](https://arxiv.org/abs/1605.06409)
 
-文章指出了检测任务之前的框架存在不自然的设计，即全卷积的特征提取部分+全连接的分类器，而表现最好的图像分类器都是全卷积的结构（ResNet等）。这篇文章提出采用"位置敏感分数图"的方法来使检测网络保持全卷积结构的同时又拥有位置感知能力。
+文章指出了检测任务之前的框架存在不自然的设计，即全卷积的特征提取部分+全连接的分类器，而表现最好的图像分类器都是全卷积的结构（ResNet等）。这篇文章提出采用"位置敏感分数图（Position Sensitive Score Map）"的方法来使检测网络保持全卷积结构的同时又拥有位置感知能力。
 
-![rfcn](img/rfcn.jpg)
+![rfcn](img/rfcn.jpg) _R-FCN中位置敏感分数图_
 
 位置敏感分数图的生成有两个重要操作，一是生成更"厚"的feature map，二是在RoI Pooling时选择性地输入feature map。
 
@@ -156,16 +156,16 @@ R-FCN是对Faster R-CNN结构上的改进，部分地解决了位置不变性和
 
 [Deformable Convolution Networks](https://arxiv.org/abs/1703.06211)
 
-本篇文章则提出在卷积和RoI Pooling两个层添加旁路显式学习偏置，来建模物体形状的可变性。
+本篇文章则提出在卷积和RoI Pooling两个层添加旁路显式学习偏置，来建模物体形状的可变性。这样的设计使得在保持目标全局上位置敏感的同时，对目标局部的建模添加灵活性。
 
-![deform](img/deform_conv.png)
+![deform](img/deform_conv.png) _可变形卷积的旁支_
 
-![deform](img/deform_roi.png)
+![deform](img/deform_roi.png) _RoI Pooling的旁支_
 
 如上两图所示，通过在卷积部分添加旁路，显式地用一部分张量表示卷积核在图片不同部分的偏移情况，再添加到原有的卷积操作上，使卷积具有灵活性的特征，提取不同物体的特征时，其形状可变。而在RoI Pooling部分，旁路的添加则赋予采样块可活动的特性，更加灵活地匹配不同物体的形状。
 
-![deform](img/deform_example.png)
+![deform](img/deform_example.png) _可变形卷积和RoIPooling的示例_
 
 在MS COCO Chanllege 2017上，MSRA团队的结果向我们展示了可变形卷积在提升检测模型性能上的有效性：
 
-![deform](img/coco_deform.png)
+![deform](img/coco_deform.png) _可变形卷积带来的增益_
