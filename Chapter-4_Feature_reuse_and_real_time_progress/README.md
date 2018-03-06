@@ -16,37 +16,58 @@
 
 回到检测任务，与分类任务不同的是，检测所面临的物体规模问题是跨类别的、处于同一语义场景中的。
 
-一个直观的思路是用不同大小的图片去生成相应大小的feature map，但这样带来巨大的参数，使本来就只能跑个位数图片的内存更加不够用。另一个思路是直接使用不同深度的卷积层生成的feature map，但较浅层的feature map上包含的低等级特征又会干扰分类的精度。
+一个直观的思路是用不同大小的图片去生成相应大小的feature map，但这样带来巨大的参数，使本来就只能跑个位数图片的显存更加不够用。另一个思路是直接使用不同深度的卷积层生成的feature map，但较浅层的feature map上包含的低等级特征又会干扰分类的精度。
 
 本文提出的方法是在高等级feature map上将特征向下回传，反向构建特征金字塔。
 
-![fpn](img/fpn.png)
+![fpn](img/fpn.png) _FPN结构_
 
-从图片开始，照常进行级联式的特征提取，再添加一条回传路径：从最高级的feature map开始，向下进行最近邻上采样得到与低等级的feature map相同大小的回传feature map，再进行元素位置上的叠加（lateral connection），构成这一深度上的特征。
+从图片开始，照常进行级联式的特征提取，再添加一条回传路径：从最高级的feature map开始，向下进行最近邻上采样得到与低等级的feature map相同大小的回传feature map，再进行逐元素相加（lateral connection），构成这一深度上的特征。
 
 这种操作的信念是，低等级的feature map包含更多的位置信息，高等级的feature map则包含更好的分类信息，将这两者结合，力图达到检测任务的位置分类双要求。
 
 特征金字塔本是很自然的想法，但如何构建金字塔同时平衡检测任务的定位和分类双目标，又能保证显存的有效利用，是本文做的比较好的地方。如今，FPN也几乎成为特征提取网络的标配，更说明了这种组合方式的有效性。
 
+### TDM
+
+[Beyond Skip Connections: Top-down Modulation for Object Detection](https://arxiv.org/abs/1612.06851)
+
+本文跟FPN是同一时期的工作，其结构也较为相似。作者认为低层级特征对小物体的检测至关重要，但对低层级特征的选择要依靠高层及特征提供的context信息，于是设计TDM（Top-Down Modulation）结构来将这两种信息结合起来处理。
+
+![tdm](img/tdm-arch.png)
+
+可以看到，TDM的结构跟FPN相当类似，但也有如下显著的不同：
+
+- T模块和L模块都是可供替换的子网络单元，可以是Residual或者Inception单元，而在FPN中，二者分别是最近邻上采样（Neareast UpSample）和逐元素相加（Element-wise Addition）。
+- FPN在每个层级得到的feature map都进行RoI Proposal和RoI Pooling，而TDM只在自上而下传播后的最大feature map上接入检测头部。
+
+![tdm](img/tdm.png)
+
+TDM的设计相比FPN拥有更多可学习的参数和灵活性，文章的实验显示，TDM结构对小物体检测精度的提升帮助明显。而且，TDM是对检测头部的改进，也有推广到单阶段模型的潜力。
+
 ### DSSD
 
-[Deconvolutional Single Shot Multibox Detector]()
+[Deconvolutional Single Shot Multibox Detector](https://arxiv.org/abs/1701.06659)
 
 本文是利用反卷积操作对SSD的改进。
 
-![dssd](img/dssd.png)
+![dssd](img/dssd.png) _DSSD的网络结构_
 
-在原版SSD中，检测头部不仅从基础网络提取特征，还添加了额外的卷积层，而本文则在这些额外卷积层后再添加可学习的反卷积层，并将feature map的尺度扩展为原有尺寸，并将两个方向上具有相同尺度的feature map叠加后再进行检测，这种设计使检测头部同时利用不同尺度上的低级特征和高级特征。
+在原版SSD中，检测头部不仅从基础网络提取特征，还添加了额外的卷积层，而本文则在这些额外卷积层后再添加可学习的反卷积层，并将feature map的尺度扩展为原有尺寸，把两个方向上具有相同尺度的feature map叠加后再进行检测，这种设计使检测头部同时利用不同尺度上的低级特征和高级特征。跟FPN不同的是，反传的特征通过反卷积得到而非简单的最近邻上采样。
+
+同时，在反卷积部分添加了额外的卷积层提供"缓冲"，以免反卷积分支影响网络整体的收敛性。另外，文章也通过加入跳跃连接改进了检测头部，使得头部结构相比原版SSD更加复杂。
+
+![dssd-head](img/dssd-head.jpg)
 
 ### RON
 
 [RON: Reverse Connection with Objectness Prior Networksfor Object Detection](https://arxiv.org/abs/1707.01691)
 
-![ron](img/ron.png)
+![ron](img/ron.png) _RON结构_
 
 文章关注两个问题：1)多尺度目标检测，2）正负样本比例失衡的问题。
 
-对于前者，文章将相邻的feature map通过reverse connection相连，并在每个feature map上都进行检测，最后再整合过滤。对于后者，类似RPN，对每个anchor box生成一个Objectness priori，作为一个指标来过滤过多的box（但不对box进行调整，RPN对box进行调整，作者指出这会造成重复计算）。文章的实验中RON在较低的分辨率下取得了超过SSD的表现。
+对于前者，文章将相邻的feature map通过reverse connection相连，并在每个feature map上都进行检测，最后再整合过滤。对于后者，类似RPN，对每个anchor box生成一个Objectness priori，作为一个指标来过滤过多的box（但不对box进行调整，RPN对box进行调整，作者指出这会造成重复计算）。文章的实验显示RON在较低的分辨率下取得了超过SSD的表现。
 
 ### RefineDet
 
@@ -104,3 +125,17 @@ SSDLite是在介绍MobileNets V2的论文[Inverted Residuals and Linear Bottlene
 ![yolov2](img/yolov2.jpg)
 
 此次改进后，YOLOv2吸收了很多工作的优点，达到跟SSD相当的精度和更快的推断速度。
+
+### SSDLite(MobileNets V2)
+
+SSDLite是在介绍MobileNets V2的论文[Inverted Residuals and Linear Bottlenecks: Mobile Networks for Classification, Detection and Segmentation](https://arxiv.org/abs/1801.04381)中提出的。
+
+MobileNets是一系列大面积应用深度可分离卷积的网络结构，试图以较小的参数量来达到跟大型网络相当的精度，以便能够在移动端部署。在本文中，作者提出了对MobileNets的改进版本，通过移动跳跃连接的位置并去掉某些ReLU层来实现更好的参数利用。可参考这个[问题](https://www.zhihu.com/question/265709710)了解更多关于这一改进的解释。
+
+在检测方面，SSDLite的改进之处在于将SSD的检测头部中的卷积运算替换为深度可分离卷积，降低了头部计算的参数量。另外，这项工作首次给出了检测模型在移动设备CPU上单核运行的速度，提供了现在移动终端执行类似任务性能的一个参考。
+
+## 总结
+
+从基础网络的不同层级提取习得的feature map并通过一定的连接将它们整合，是近年来检测模型的重要趋势。这些针对检测头部的改进也越来越多地体现着研究者们对检测任务要求的表述和探索。另一方面，面向实时性的改进则继续推动这检测任务在应用领域的发展。
+
+笔者视野有限，对这些工作的介绍中不实和不当之处请读者指出，有遗漏的重要工作也请评论交流。在下一篇中，我们将对检测领域的其他思路的工作做一个概览，并给整个系列文章作结。
