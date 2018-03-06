@@ -90,17 +90,39 @@ Xception最终的网络结构如下，简单讲是线性堆叠的Depthwise Separ
 
 SENet是最后一届ImageNet Challenge的夺冠架构，中心思想是添加旁路为channel之间的相关性进行建模，可以认为是channel维度的attention。
 
-![senet](img/senet.png)
+![senet](img/senet.png) _Squeeze和Excitation分支_
 
 SENet通过'特征重标定'（Feature Recalibration）来完成channel层面的注意力机制。具体地，先通过Squeeze操作将特征的空间性压缩掉，仅保留channel维度，再通过Excitation操作为每个特征通道生成一个权重，用于显式地建模channel之间的相关性，最后通过Reweight操作将权重加权到原来的channel上，即构成不同channel间重标定。
 
 SENet可以作为网络中模块间的额外连接附属到原有的经典结构上，其Squeeze操作在压缩信息的同时也降低了这一附属连接的开销。
 
-![senet-example](img/senet-example.jpg)
+![senet-example](img/senet-example.jpg) _SE作为额外部件添加在经典结构上_
+
+经SENet改进的ResNet被UCenter团队应用在MS COCO Chanllenge 2017上，也取得了不错的效果。
+
+### NASNet：网络结构搜索
+
+[Learning Transferable Architectures for Scalable Image Recognition](https://arxiv.org/abs/1707.07012)
+
+NAS（Neural Architecture Searh，神经网络结构搜索）的框架最早出现于作者的另一项工作[Neural Architecture Search with Reinforcement Learning](https://arxiv.org/abs/)，其核心思想是用一个RNN学习定义网络结构的超参，通过强化学习的框架来更新这一RNN来得到更好表现的网络结构。
+
+![nas](img/nas.png) _NAS的结构_
+
+在本文中，作者参考本节最初提到的"Repeat"范式，认为在小数据集上搜索到的结构单元具有移植性和扩展性，将这个结构单元通过堆叠得到的大网络能够在较大数据集上取得较好的表现。这就构成了文章的基本思路：将网络搜索局限在微观的局部结构上，以相对原工作较小的开销（实际开销仍然巨大）得到可供扩展的网络单元，再由这些单元作为基本部件填入人工设计的"元结构"。
+
+微观层面，作者仍选择用RNN作为Controller，挑选跳跃连接、最大池化、空洞卷积、深度可分离卷积等等操作构成基本搜索空间，以逐元素相加（element-wise addition）和拼接（concatenation）作为合并操作，并重复一定的构建次数来搜索此基本单元。
+
+![rnn](img/rnn.png) _RNN作为Controller的微观结构搜索，右为示例结构_
+
+宏观层面，将基本单元分为Normal Cell（不改变feature map大小）和Reduction Cell（使feature map的spatial维度减半，即stride=2），交替堆叠一定数量的Normal Cell和Reduction Cell形成下面的元结构。
+
+![meta](img/nas-meta.png) _NASNet在不同数据集上的元结构，ImageNet的图片具有更多的像素数，需要更多的Reduction单元_
+
+NASNet采取了自动搜索的方式去设计网络的结构，人工的部分迁移到对搜索空间的构建和评测指标的设立上，是一种"元学习"的策略。应用的检测领域，NASNet作为基础框架的Faster R-CNN取得了SOTA的表现，也支撑了这一搜索得到结构的泛化性能。在最近的工作中，作者团队又设计了ENAS降低搜索的空间和时间开销，继续推动着这一方向的研究。
 
 ## 分类与定位问题的权衡
 
-从R-CNN开始，检测模型常采用分类任务上表现最好的卷积网络作为基础网络提取特征，在其基础上添加额外的头部结构来实现检测功能。然而，分类和检测所面向的场景不尽相同：分类常常关注具有整体语义的图像，而检测则需要区分前景和背景。
+从R-CNN开始，检测模型常采用分类任务上表现最好的卷积网络作为基础网络提取特征，在其基础上添加额外的头部结构来实现检测功能。然而，分类和检测所面向的场景不尽相同：分类常常关注具有整体语义的图像（第二篇中介绍COCO数据集中提到的iconic image），而检测则需要区分前景和背景（non-iconic image）。
 
 分类网络中的Pooling层操作常常会引入平移不变性等使得整体语义的理解更加鲁棒，而在检测任务中我们则需要位置敏感的模型来保证预测位置的精确性，这就产生了分类和定位两个任务间的矛盾。
 
