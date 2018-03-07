@@ -71,6 +71,16 @@ TDM的设计相比FPN拥有更多可学习的参数和灵活性，文章的实�
 
 对于前者，文章将相邻的feature map通过reverse connection相连，并在每个feature map上都进行检测，最后再整合过滤。对于后者，类似RPN，对每个anchor box生成一个Objectness priori，作为一个指标来过滤过多的box（但不对box进行调整，RPN对box进行调整，作者指出这会造成重复计算）。文章的实验显示RON在较低的分辨率下取得了超过SSD的表现。
 
+### FSSD
+
+[FSSD: Feature Fusion Single Shot Multibox Detector](https://arxiv.org/abs/1712.00960)
+
+FSSD提出了另一种对不同层级特征进行融合的方式，从基础网络不同层级得到feature map后，利用采样操作将它们在spatial方向上规整化，再拼接到一起，并通过BN层以使不同层级特征的激活值数量级一致。最后，拼接后的feature map经过一系列的卷积操作，产生不同大小的融合feature map传入检测头部的预测网络。
+
+![fssd](img/fssd.png) _FSSD的特征融合方式_
+
+文章指出，特征融合的初衷还是同时利用高层级feature map提供的语义信息和低层级feature map的位置信息，而像FPN中的逐元素相加操作进行融合的方式要求不同层级的feature map具有完全一致的大小，本文则采用拼接的方式，不受channel数的限制。
+
 ### RefineDet
 
 [Single-Shot Refinement Neural Network for Object Detection](https://arxiv.org/abs/1711.06897)
