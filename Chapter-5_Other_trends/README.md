@@ -70,6 +70,22 @@ BN操作需要对每个batch计算均值和方差来进行标准化，对于多�
 
 更新BN参数的检测模型能够在较大的batch size下收敛，也大幅提高了检测模型的训练速度，加快了算法的迭代速度。
 
+## DSOD（Deeply Supervised Object Detector）
+
+[DSOD: Learning Deeply Supervised Object Detectors from Scratch](https://arxiv.org/abs/1708.01241)
+
+R-CNN工作的一个深远影响是在大数据集（分类）上pre-train，在小数据集（检测）fine-tune的做法，本文指出这限制了检测任务上基础网络结构的调整（需要在ImageNet上等预训练的分类网络），也容易引入分类任务的bias，因而提出从零训练检测网络的方法。
+
+作者认为，由于RoI的存在，两阶段检测模型从零训练难以收敛，从而选择Region-free的单阶段方法进行尝试。一个关键的发现是，从零训练的网络需要Deep Supervision，文中采用紧密连接的方式来达到隐式Deep Supervision的效果，因而DSOD的基础网络部分类似DenseNet，浅层的feature map也有机会得到更接近损失函数的监督。
+
+![dsod](img/dsod.png)
+
+文章的实验显示，DSOD从零开始训练也可以达到更SSD等相当的精度，并且模型的参数更少，但速度方面有所下降。
+
+## A-Fast-RCNN
+
+[A-Fast-RCNN: Hard Positive Generation via Adversary for Object Detection](https://arxiv.org/abs/1704.03414)
+
 ## 结语
 
 by 德兵 关于通用目标检测在学术上的主要进展，这次就整理这么多啦，如果有朋友们发现更好的工作可以留言给我们，大家一起讨论学习。另外，在工业界还有更多的问题，比如如何做到单模型满足各种不同场景的需求，如何解决标注中的噪声和错误干扰，如何针对具体业务类型（如人脸）设计特定的网络，如何在廉价的硬件设备上做更高性能的检测，如何利用好tensorRT、int8、mimicking等进行加速等等，就不在本文讨论之列啦。欢迎感兴趣的同学来格灵深瞳实习和交流。
