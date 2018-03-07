@@ -36,14 +36,14 @@
 
 本文跟FPN是同一时期的工作，其结构也较为相似。作者认为低层级特征对小物体的检测至关重要，但对低层级特征的选择要依靠高层及特征提供的context信息，于是设计TDM（Top-Down Modulation）结构来将这两种信息结合起来处理。
 
-![tdm](img/tdm-arch.png)
+![tdm](img/tdm-arch.png) _TDM整体结构_
 
 可以看到，TDM的结构跟FPN相当类似，但也有如下显著的不同：
 
 - T模块和L模块都是可供替换的子网络单元，可以是Residual或者Inception单元，而在FPN中，二者分别是最近邻上采样（Neareast UpSample）和逐元素相加（Element-wise Addition）。
 - FPN在每个层级得到的feature map都进行RoI Proposal和RoI Pooling，而TDM只在自上而下传播后的最大feature map上接入检测头部。
 
-![tdm](img/tdm.png)
+![tdm](img/tdm.png) _TDM中的T模块和L模块_
 
 TDM的设计相比FPN拥有更多可学习的参数和灵活性，文章的实验显示，TDM结构对小物体检测精度的提升帮助明显。而且，TDM是对检测头部的改进，也有推广到单阶段模型的潜力。
 
@@ -59,7 +59,7 @@ TDM的设计相比FPN拥有更多可学习的参数和灵活性，文章的实�
 
 同时，在反卷积部分添加了额外的卷积层提供"缓冲"，以免反卷积分支影响网络整体的收敛性。另外，文章也通过加入跳跃连接改进了检测头部，使得头部结构相比原版SSD更加复杂。
 
-![dssd-head](img/dssd-head.jpg)
+![dssd-head](img/dssd-head.jpg) _DSSD的头部结构_
 
 ### RON
 
@@ -75,9 +75,9 @@ TDM的设计相比FPN拥有更多可学习的参数和灵活性，文章的实�
 
 [Single-Shot Refinement Neural Network for Object Detection](https://arxiv.org/abs/1711.06897)
 
-![RefineDet](img/refinedet.jpg)
+![RefineDet](img/refinedet.jpg) _RefineDet的ARM和ODM_
 
-本文是一阶段的模型，但思路上却是两阶段的。文章指出两阶段方法精度有优势的原因有三点：1）两阶段的设计使之有空间来用采样策略处理类别不均衡的问题；2）级联的方式进行box回归；3）两阶段的特征描述。
+本文是单阶段的模型，但思路上却是两阶段的。文章指出两阶段方法精度有优势的原因有三点：1）两阶段的设计使之有空间来用采样策略处理类别不均衡的问题；2）级联的方式进行box回归；3）两阶段的特征描述。
 
 文章提出两个模块来在一阶段检测器中引入两阶段设计的优势：Anchor Refinement Module(ARM)和Object Detection Module(ODM)。前者用于识别并过滤背景类anchor来降低分类器的负担，并且调整anchor位置以更好的向分类器输入，后者用于多分类和box的进一步回归。
 
@@ -122,7 +122,7 @@ light-head在这里的改进则是把这一个隐藏的嵌入空间压缩到较�
 7. 多尺度训练
 8. 更高效的网络Darknet-19，类似VGG的网络，在ImageNet上以较少的参数量达到跟当前最佳相当的精度
 
-![yolov2](img/yolov2.jpg)
+![yolov2](img/yolov2.jpg) _YOLOv2的改进_
 
 此次改进后，YOLOv2吸收了很多工作的优点，达到跟SSD相当的精度和更快的推断速度。
 
