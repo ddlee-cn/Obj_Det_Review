@@ -2,6 +2,8 @@
 
 ## 文章结构
 
+本篇为读者展现检测领域多样性的一个视角，跟其他任务联合，有YOLO9000、Mask R-CNN；改进损失函数，有Focal Loss；利用GAN提升检测模型的鲁棒性，有A-Fast-RCNN；建模目标关联，有Relation Moduel；还有mimicking思路、引入大batch训练的MegDet和从零训练的DSOD，再加上未收录的Cascade R-CNN、SNIP等，多样性的思路为检测任务的解决上注入着前所未有的活力，也推动着理解视觉这一终极目标的进步。
+
 ![overview](img/overview.png)
 
 ## YOLO9000
@@ -14,7 +16,7 @@ YOLO9000使用了ImageNet和COCO数据集联合训练，在合并两者的标签
 
 ![yolo-tree](img/yolo9000_tree.jpg) _标签的合并_
 
-类似条件概率的方式计算每个子标签的概率值，超出一定的阈值时则选定该类作为输出，训练时也仅对其路径上的类别进行损失的计算和BP。
+类似条件概率的方式计算每个子标签的概率值，超出一定的阈值com时则选定该类作为输出，训练时也仅对其路径上的类别进行损失的计算和BP。
 
 YOLO9000为我们提供了一种泛化检测模型的训练方式，文章的结果显示YOLO9000在没有COCO标注的类别上有约20的mAP表现，能够检测的物体类别超过9000种。当然，其泛化性能也受检测标注类别的制约，在有类别继承关系的类上表现不错，而在完全没有语义联系的类上表现很差。
 
@@ -85,6 +87,32 @@ R-CNN工作的一个深远影响是在大数据集（分类）上pre-train，在
 ## A-Fast-RCNN
 
 [A-Fast-RCNN: Hard Positive Generation via Adversary for Object Detection](https://arxiv.org/abs/1704.03414)
+
+本文将GAN引入检测模型，用GAN生成较难的样本以提升检测网络应对遮挡(Occlusion)、形变(Deformation)的能力。
+
+对于前者，作者设计了ASDN(Adversarial Spatial Dropout Network)，在feature map层面生成mask来产生对抗样本。对于feature map，在旁支上为每个位置生成一个概率图，根据一定的阈值将部分feature map上的值drop掉，再传入后面的头部网络。
+
+![asdn](img/asdn.png)
+
+类似的，ASTN(Adversarial Spatial Transformer Network)在旁支上生成旋转等形变并施加到feature map上。整体上，两个对抗样本生成的子网络串联起来，加入到RoI得到的feature和头部网络之间。
+
+![asdn-astn](img/asdn-astn.png)
+
+文中的实验显示，在VOC上，对抗训练对plant, bottle等类别的检测精度有提升，但对个别类别却有损害。这项工作是GAN在检测任务上的试水，在feature空间而不是原始数据空间生成对抗样本的思路值得借鉴。
+
+## Relation Module
+
+[Relation Networks for Object Detection](https://arxiv.org/abs/1711.11575)
+
+Attention机制在自然语言处理领域取得了有效的进展，也被SENet等工作引入的计算机视觉领域。本文试图用Attention机制建模目标物体之间的相关性。
+
+理解图像前背景的语义关系是检测任务的潜在目标，权威数据集COCO的收集过程也遵循着在日常情景中收集常见目标的原则，本文则从目标物体间的关系入手，用geometric feature(f_G)和appearance feature(f_A)来表述某一RoI，并联合其他RoI建立relation后，生成一个融合后的feature map。计算如下图：
+
+![relation](img/relation.png)
+
+作者将这样的模块插入两阶段检测器的头部网络，并用改装后的duplicate removal network替代传统的NMS后处理操作，形成真正端到端的检测网络。在Faster R-CNN, FPN, Deformable ConvNets上的实验显示，加入Relation Module均能带来精度提升。
+
+![relation-app](img/relation-app.png)
 
 ## 结语
 
