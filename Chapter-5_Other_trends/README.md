@@ -6,7 +6,9 @@
 
 ![overview](img/overview.png)
 
-## YOLO9000
+## 工作拾遗
+
+### YOLO9000
 
 [YOLO9000: Better, Faster, Stronger](https://arxiv.org/1612.08242)
 
@@ -20,7 +22,7 @@ YOLO9000使用了ImageNet和COCO数据集联合训练，在合并两者的标签
 
 YOLO9000为我们提供了一种泛化检测模型的训练方式，文章的结果显示YOLO9000在没有COCO标注的类别上有约20的mAP表现，能够检测的物体类别超过9000种。当然，其泛化性能也受检测标注类别的制约，在有类别继承关系的类上表现不错，而在完全没有语义联系的类上表现很差。
 
-## Mask R-CNN
+### Mask R-CNN
 
 Mask R-CNN通过将检测和实例分割联合训练的方式同时提高了分割和检测的精度。在原有Faster R-CNN的头部中分类和位置回归两个并行分支外再加入一个实例分割的并行分支，并将三者的损失联合训练。
 
@@ -30,7 +32,7 @@ Mask R-CNN通过将检测和实例分割联合训练的方式同时提高了分�
 
 FAIR团队在COCO Chanllege 2017上基于Mask R-CNN也取得了前列的成绩，但在实践领域，实例分割的标注相比检测标注要更加昂贵，而且按照最初我们对图像理解的三个层次划分，中层次的检测任务借用深层次的分割信息训练，事实上超出了任务的要求。
 
-## Focal Loss（RetinaNet）
+### Focal Loss（RetinaNet）
 
 [Focal Loss for Dense Object Detection](https://arxiv.org/1708.02002)
 
@@ -44,7 +46,7 @@ FAIR团队在COCO Chanllege 2017上基于Mask R-CNN也取得了前列的成绩�
 
 以ResNet的FPN为基础网络，添加了Focal Loss的RetinaNet取得了跟两阶段模型相当甚至超出的精度。另外，Focal Loss的应用也不只局限在单阶段检测器，其他要处理类别不均衡问题任务上的应用也值得探索。
 
-## Mimicking
+### Mimicking
 
 [Mimicking Very Efficient Network for Object Detection](http://openaccess.thecvf.com/content_cvpr_2017/papers/Li_Mimicking_Very_Efficient_CVPR_2017_paper.pdf)
 
@@ -58,7 +60,7 @@ Mimicking方法通常会学习概率输出的前一层，被称为"Deep-ID"，�
 
 文章在Pascal VOC上的实验显示这种mimicking框架可以在相当的精度下实现2倍以上的加速效果。
 
-## CGBN（Cross GPU Batch Normalization）
+### CGBN（Cross GPU Batch Normalization）
 
 [MegDet: A Large Mini-Batch Object Detector](https://arxiv.org/abs/1711.07240)
 
@@ -72,7 +74,7 @@ BN操作需要对每个batch计算均值和方差来进行标准化，对于多�
 
 更新BN参数的检测模型能够在较大的batch size下收敛，也大幅提高了检测模型的训练速度，加快了算法的迭代速度。
 
-## DSOD（Deeply Supervised Object Detector）
+### DSOD（Deeply Supervised Object Detector）
 
 [DSOD: Learning Deeply Supervised Object Detectors from Scratch](https://arxiv.org/abs/1708.01241)
 
@@ -84,7 +86,7 @@ R-CNN工作的一个深远影响是在大数据集（分类）上pre-train，在
 
 文章的实验显示，DSOD从零开始训练也可以达到更SSD等相当的精度，并且模型的参数更少，但速度方面有所下降。
 
-## A-Fast-RCNN
+### A-Fast-RCNN
 
 [A-Fast-RCNN: Hard Positive Generation via Adversary for Object Detection](https://arxiv.org/abs/1704.03414)
 
@@ -100,7 +102,7 @@ R-CNN工作的一个深远影响是在大数据集（分类）上pre-train，在
 
 文中的实验显示，在VOC上，对抗训练对plant, bottle等类别的检测精度有提升，但对个别类别却有损害。这项工作是GAN在检测任务上的试水，在feature空间而不是原始数据空间生成对抗样本的思路值得借鉴。
 
-## Relation Module
+### Relation Module
 
 [Relation Networks for Object Detection](https://arxiv.org/abs/1711.11575)
 
@@ -116,4 +118,8 @@ Attention机制在自然语言处理领域取得了有效的进展，也被SENet
 
 ## 结语
 
-by 德兵 关于通用目标检测在学术上的主要进展，这次就整理这么多啦，如果有朋友们发现更好的工作可以留言给我们，大家一起讨论学习。另外，在工业界还有更多的问题，比如如何做到单模型满足各种不同场景的需求，如何解决标注中的噪声和错误干扰，如何针对具体业务类型（如人脸）设计特定的网络，如何在廉价的硬件设备上做更高性能的检测，如何利用好tensorRT、int8、mimicking等进行加速等等，就不在本文讨论之列啦。欢迎感兴趣的同学来格灵深瞳实习和交流。
+检测领域在近年来取得的进展只是这场深度模型潮流的一个缩影。
+
+本系列文章梳理了检测任务上深度方法的经典工作和较新的趋势，并总结了常用的测评集和训练技巧，期望为读者建立对这一任务的基本认识。在介绍对象的选择和章节的划分上，都带有笔者自己的偏见，本文仅仅可作为一个导读，更多的细节应参考实现的代码，更多的讨论应参考文章作者的扩展实验。事实上，每项工作都反映着作者对这一问题的洞察，而诸多工作间的横向对比也有助于培养独立和成熟的视角来评定每项工作的贡献。另外，不同文献间的相互引述、所投会议期刊审稿人的意见等，都是比本文更有参考价值的信息来源。
+
+在工业界还有更多的问题，比如如何做到单模型满足各种不同场景的需求，如何解决标注中的噪声和错误干扰，如何针对具体业务类型（如人脸）设计特定的网络，如何在廉价的硬件设备上做更高性能的检测，如何利用优化的软件库、模型压缩方法进行加速等等，就不在本文讨论之列。欢迎感兴趣的同学来格灵深瞳实习和交流。
