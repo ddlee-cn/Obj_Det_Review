@@ -82,7 +82,7 @@ R-CNN工作的一个深远影响是在大数据集（分类）上pre-train，在
 
 作者认为，由于RoI的存在，两阶段检测模型从零训练难以收敛，从而选择Region-free的单阶段方法进行尝试。一个关键的发现是，从零训练的网络需要Deep Supervision，文中采用紧密连接的方式来达到隐式Deep Supervision的效果，因而DSOD的基础网络部分类似DenseNet，浅层的feature map也有机会得到更接近损失函数的监督。
 
-![dsod](img/dsod.png)
+![dsod](img/dsod.png) _DSOD结构_
 
 文章的实验显示，DSOD从零开始训练也可以达到更SSD等相当的精度，并且模型的参数更少，但速度方面有所下降。
 
@@ -94,11 +94,11 @@ R-CNN工作的一个深远影响是在大数据集（分类）上pre-train，在
 
 对于前者，作者设计了ASDN(Adversarial Spatial Dropout Network)，在feature map层面生成mask来产生对抗样本。对于feature map，在旁支上为每个位置生成一个概率图，根据一定的阈值将部分feature map上的值drop掉，再传入后面的头部网络。
 
-![asdn](img/asdn.png)
+![asdn](img/asdn.png) _ASDN_
 
 类似的，ASTN(Adversarial Spatial Transformer Network)在旁支上生成旋转等形变并施加到feature map上。整体上，两个对抗样本生成的子网络串联起来，加入到RoI得到的feature和头部网络之间。
 
-![asdn-astn](img/asdn-astn.png)
+![asdn-astn](img/asdn-astn.png) _ASDN和ASTN被串联_
 
 文中的实验显示，在VOC上，对抗训练对plant, bottle等类别的检测精度有提升，但对个别类别却有损害。这项工作是GAN在检测任务上的试水，在feature空间而不是原始数据空间生成对抗样本的思路值得借鉴。
 
@@ -110,15 +110,15 @@ Attention机制在自然语言处理领域取得了有效的进展，也被SENet
 
 理解图像前背景的语义关系是检测任务的潜在目标，权威数据集COCO的收集过程也遵循着在日常情景中收集常见目标的原则，本文则从目标物体间的关系入手，用geometric feature(f_G)和appearance feature(f_A)来表述某一RoI，并联合其他RoI建立relation后，生成一个融合后的feature map。计算如下图：
 
-![relation](img/relation.png)
+![relation](img/relation.png) _Relation Module_
 
 作者将这样的模块插入两阶段检测器的头部网络，并用改装后的duplicate removal network替代传统的NMS后处理操作，形成真正端到端的检测网络。在Faster R-CNN, FPN, Deformable ConvNets上的实验显示，加入Relation Module均能带来精度提升。
 
-![relation-app](img/relation-app.png)
+![relation-app](img/relation-app.png) _Relation Module应用在头部网络和替代NMS_
 
 ## 结语
 
-检测领域在近年来取得的进展只是这场深度模型潮流的一个缩影。
+检测领域在近年来取得的进展只是这场深度模型潮流的一个缩影。理解图像、理解视觉这一机器视觉的中心问题上，仍不断有新鲜的想法出现。推动整个机器视觉行业跃进的同时，深度模型也越来越来暴露出自身的难收敛、难解释等等问题，整个领域仍在负重前行。
 
 本系列文章梳理了检测任务上深度方法的经典工作和较新的趋势，并总结了常用的测评集和训练技巧，期望为读者建立对这一任务的基本认识。在介绍对象的选择和章节的划分上，都带有笔者自己的偏见，本文仅仅可作为一个导读，更多的细节应参考实现的代码，更多的讨论应参考文章作者的扩展实验。事实上，每项工作都反映着作者对这一问题的洞察，而诸多工作间的横向对比也有助于培养独立和成熟的视角来评定每项工作的贡献。另外，不同文献间的相互引述、所投会议期刊审稿人的意见等，都是比本文更有参考价值的信息来源。
 
