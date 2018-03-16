@@ -1,4 +1,35 @@
-# 目标检测小综述-草稿
+# 目标检测学习总结
+
+作者：@[李家丞](https://ddlee.cn)，[格灵深瞳](https://deepglint.com)算法组实习生
+
+审稿：张德兵，孙志成
+
+## Links
+
+首发于格灵深瞳知乎机构号：[干货 | 目标检测入门，看这篇就够了](https://zhuanlan.zhihu.com/p/34142321)
+
+在线阅读及评论：[GitBook](https://www.gitbook.com/book/ddlee96/object-detection-review/details)
+
+更新发布地址：[GitHub](https://github.com/ddlee96/Obj_Det_Review/releases)
+
+Issue提交：[GitHub](https://github.com/ddlee96/Obj_Det_Review/issues/new)
+
+## Changelog
+
+### PDF v0.2 2018.03.16
+
+- 调整部分图片大小
+- 添加链接
+
+### PDF v0.1 2018.03.12
+
+- 全部内容完成
+- 生成PDF文档
+
+### Draft v0228
+
+- 完成了拾遗部分工作的介绍
+- 少量图片大小调整、连接的补充
 
 ## 引言
 
@@ -27,15 +58,3 @@
 三是分割（Segmentation）。分割包括语义分割（semantic segmentation）和实例分割（instance segmentation），前者是对前背景分离的拓展，要求分离开具有不同语义的图像部分，而后者是检测任务的拓展，要求描述出目标的轮廓（相比检测框更为精细）。分割是对图像的像素级描述，它赋予每个像素类别（实例）意义，适用于理解要求较高的场景，如无人驾驶中对道路和非道路的分割。
 
 本系列文章关注的领域是目标检测，即图像理解的中层次。
-
-## Changelog
-
-### v0301
-
-- 部分词句调整，第一章发布
-- 调整系列文章大纲为分章节单独结构
-
-### v0228
-
-- 完成了拾遗部分工作的介绍
-- 少量图片大小调整、连接的补充
