@@ -1,6 +1,6 @@
 # 目标检测学习总结
 
-作者：@[李家丞](https://ddlee.cn)，[格灵深瞳](https://deepglint.com)算法组实习生
+作者：@[李家丞](https://ddlee.cn)，[格灵深瞳](http://www.deepglint.com/)算法组实习生
 
 审稿：张德兵，孙志成
 
